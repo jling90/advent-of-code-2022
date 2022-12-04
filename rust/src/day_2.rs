@@ -37,3 +37,34 @@ pub fn task_one(lines: Vec<String>) -> String {
         .sum::<i32>()
         .to_string()
 }
+
+pub fn task_two(lines: Vec<String>) -> String {
+    let outcome_scores: HashMap<&str, i32> = HashMap::from([("X", 0), ("Y", 3), ("Z", 6)]);
+
+    lines
+        .iter()
+        .map(|line| {
+            let plays: Vec<&str> = line.split(" ").collect();
+            let outcome = plays[1];
+            let response_score = match line.as_str() {
+                "A X" => 3,
+                "A Y" => 1,
+                "A Z" => 2,
+                "B X" => 1,
+                "B Y" => 2,
+                "B Z" => 3,
+                "C X" => 2,
+                "C Y" => 3,
+                "C Z" => 1,
+                _ => panic!("invalid line!"),
+            };
+
+            if let Some(score) = outcome_scores.get(outcome) {
+                response_score + *score
+            } else {
+                panic!("invalid play")
+            }
+        })
+        .sum::<i32>()
+        .to_string()
+}

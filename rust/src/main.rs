@@ -31,6 +31,12 @@ fn main() {
                 day_2::task_one(util::read_lines_to_string_vec(filename))
             )
         }
+        "2 2" => {
+            println!(
+                "{}",
+                day_2::task_two(util::read_lines_to_string_vec(filename))
+            )
+        }
         _ => println!("No match for exercise {}, task {}", day_num, task_num),
     }
 }
