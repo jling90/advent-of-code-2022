@@ -44,7 +44,11 @@ fn main() {
                 day_3::task_one(util::read_lines_to_string_vec(filename))
             )
         }
-
+        "3 2" => {
+            if let Some(answer) = day_3::task_two(util::read_lines_to_string_vec(filename)) {
+                println!("{}", answer)
+            }
+        }
         _ => println!("No match for exercise {}, task {}", day_num, task_num),
     }
 }
