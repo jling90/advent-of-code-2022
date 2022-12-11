@@ -2,6 +2,7 @@ use std::env;
 mod day_1;
 mod day_2;
 mod day_3;
+mod day_4;
 mod util;
 
 fn main() {
@@ -49,6 +50,13 @@ fn main() {
                 println!("{}", answer)
             }
         }
+        "4 1" => {
+            println!(
+                "{}",
+                day_4::task_one(util::read_lines_to_string_vec(filename))
+            )
+        }
+
         _ => println!("No match for exercise {}, task {}", day_num, task_num),
     }
 }
