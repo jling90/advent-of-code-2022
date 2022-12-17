@@ -4,6 +4,7 @@ mod day_2;
 mod day_3;
 mod day_4;
 mod day_5;
+mod day_6;
 mod util;
 
 fn main() {
@@ -77,6 +78,20 @@ fn main() {
             } else {
                 println!("Failed to read file");
             }
+        }
+
+        "6 1" => {
+            println!(
+                "{}",
+                day_6::task_one(util::read_lines_to_string_vec(filename).get(0).unwrap())
+            )
+        }
+
+        "6 2" => {
+            println!(
+                "{}",
+                day_6::task_two(util::read_lines_to_string_vec(filename).get(0).unwrap())
+            )
         }
 
         _ => println!("No match for exercise {}, task {}", day_num, task_num),
