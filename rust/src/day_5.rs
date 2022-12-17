@@ -94,3 +94,19 @@ pub fn task_one(lines: io::Lines<io::BufReader<File>>) -> String {
         .map(|stack| stack.pop().unwrap())
         .collect()
 }
+
+pub fn task_two(lines: io::Lines<io::BufReader<File>>) -> String {
+    let (mut stacks, instructions) = process_inputs(lines);
+
+    for (count, from, to) in instructions {
+        let cursor = stacks[from - 1].len() - count;
+        let mut drained = stacks[from - 1].drain(cursor..).collect();
+
+        stacks[to - 1].append(&mut drained);
+    }
+
+    stacks
+        .iter_mut()
+        .map(|stack| stack.pop().unwrap())
+        .collect()
+}

@@ -71,6 +71,14 @@ fn main() {
             }
         }
 
+        "5 2" => {
+            if let Ok(lines) = util::read_lines(filename) {
+                println!("{}", day_5::task_two(lines));
+            } else {
+                println!("Failed to read file");
+            }
+        }
+
         _ => println!("No match for exercise {}, task {}", day_num, task_num),
     }
 }
