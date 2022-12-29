@@ -1,31 +1,23 @@
-use std::{
-    collections::{HashMap, HashSet},
-    iter::Sum,
-    ops::Add,
-};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug)]
-struct Node<T, R>
+struct Node<T>
 where
     T: PartialEq,
-    R: PartialEq,
 {
     idx: usize,
-    name: R,
     val: T,
     parent: Option<usize>,
     children: HashSet<usize>,
 }
 
-impl<T, R> Node<T, R>
+impl<T> Node<T>
 where
     T: PartialEq,
-    R: PartialEq,
 {
-    fn new(idx: usize, val: T, name: R) -> Self {
+    fn new(idx: usize, val: T) -> Self {
         Self {
             idx,
-            name,
             val,
             parent: None,
             children: HashSet::new(),
@@ -38,52 +30,50 @@ struct ArenaTree<T>
 where
     T: PartialEq,
 {
-    arena: Vec<Node<T, String>>,
+    arena: Vec<Node<T>>,
 }
 
 impl<T> ArenaTree<T>
 where
-    T: PartialEq + Add<Output = T> + Sum + Copy,
+    T: PartialEq,
 {
-    fn node(&mut self, val: T, name: &str) -> usize {
+    fn node(&mut self, val: T) -> usize {
         for node in &self.arena {
-            if node.name == name {
+            if node.val == val {
                 return node.idx;
             }
         }
 
         let idx = self.arena.len();
-        self.arena.push(Node::new(idx, val, name.to_string()));
+        self.arena.push(Node::new(idx, val));
         idx
     }
 
-    fn node_size(&self, idx: usize) -> T {
+    fn node_size(&self, idx: usize, get_val: fn(&T) -> u32) -> u32 {
         let node = &self.arena[idx];
 
         // Add a local cache to save the stack from exploding
-        let mut node_cache: HashMap<usize, T> = HashMap::new();
+        let mut node_cache: HashMap<usize, u32> = HashMap::new();
 
-        println!("node_size for: {}-{}", idx, node.name);
-
-        let child_sum = node
+        let child_sum: u32 = node
             .children
             .iter()
             .map(|i| match node_cache.get(i) {
                 Some(cached) => *cached,
                 None => {
-                    let sz = &self.node_size(*i);
+                    let sz = &self.node_size(*i, get_val);
                     node_cache.insert(*i, *sz);
                     *sz
                 }
             })
             .sum();
 
-        node.val + child_sum
+        get_val(&node.val) + child_sum
     }
 }
 
-fn build_tree(lines: Vec<String>) -> ArenaTree<u32> {
-    let mut tree: ArenaTree<u32> = ArenaTree::default();
+fn build_tree(lines: Vec<String>) -> ArenaTree<(u32, String)> {
+    let mut tree: ArenaTree<(u32, String)> = ArenaTree::default();
     let mut current_dir: Option<usize> = None;
 
     // Populate arena tree
@@ -103,19 +93,19 @@ fn build_tree(lines: Vec<String>) -> ArenaTree<u32> {
                         current_dir = tree.arena[current_dir.unwrap()].parent
                     }
                     Some(dirname) => {
-                        let dir_node = Some(tree.node(0, dirname));
-                        println!("cd {}: {:?} -> {:?}", dirname, current_dir, dir_node);
+                        let dir_node = Some(tree.node((0, dirname.to_string())));
+                        // println!("/cd {}: {:?} -> {:?}", dirname, current_dir, dir_node);
                         current_dir = dir_node
                     }
 
                     None => panic!(),
                 },
                 Some("ls") => {
-                    println!(
-                        "ls: {:?}-{:?}",
-                        current_dir,
-                        tree.arena[current_dir.unwrap()].name
-                    );
+                    // println!(
+                    //     "ls: {:?}-{:?}",
+                    //     current_dir,
+                    //     tree.arena[current_dir.unwrap()]
+                    // );
                     continue;
                 }
                 None => panic!(),
@@ -129,7 +119,7 @@ fn build_tree(lines: Vec<String>) -> ArenaTree<u32> {
                     "dir" => 0,
                     s => s.parse().unwrap(),
                 };
-                let leaf = tree.node(size, splits.next().unwrap());
+                let leaf = tree.node((size, splits.next().unwrap().to_string()));
                 tree.arena[leaf].parent = current_dir;
                 tree.arena[current_dir.unwrap()].children.insert(leaf);
             }
@@ -140,6 +130,12 @@ fn build_tree(lines: Vec<String>) -> ArenaTree<u32> {
     tree
 }
 
+fn get_node_size<T>(val: &(u32, T)) -> u32 {
+    let (size, _) = val;
+
+    *size
+}
+
 pub fn task_one(lines: Vec<String>) -> String {
     let tree = build_tree(lines);
 
@@ -148,7 +144,7 @@ pub fn task_one(lines: Vec<String>) -> String {
     tree.arena
         .iter()
         .filter_map(|n| {
-            let size = tree.node_size(n.idx);
+            let size = tree.node_size(n.idx, get_node_size);
 
             if size < 10000 {
                 Some(size)
