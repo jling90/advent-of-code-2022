@@ -5,6 +5,7 @@ mod day_3;
 mod day_4;
 mod day_5;
 mod day_6;
+mod day_7;
 mod util;
 
 fn main() {
@@ -91,6 +92,13 @@ fn main() {
             println!(
                 "{}",
                 day_6::task_two(util::read_lines_to_string_vec(filename).get(0).unwrap())
+            )
+        }
+
+        "7 1" => {
+            println!(
+                "{}",
+                day_7::task_one(util::read_lines_to_string_vec(filename))
             )
         }
 
