@@ -147,3 +147,27 @@ pub fn task_one(lines: Vec<String>) -> String {
         .sum::<u32>()
         .to_string()
 }
+
+pub fn task_two(lines: Vec<String>) -> String {
+    let tree = build_tree(lines);
+    let max_size = 70000000;
+    let required_size = 30000000;
+    let current = max_size - tree.node_size(0, get_node_size);
+    let threshold = required_size - current;
+
+    tree.arena
+        .iter()
+        .filter_map(|n| {
+            let size = tree.node_size(n.idx, get_node_size);
+
+            // Only count directories
+            if size > threshold && !n.children.is_empty() {
+                Some(size)
+            } else {
+                None
+            }
+        })
+        .min()
+        .unwrap()
+        .to_string()
+}
