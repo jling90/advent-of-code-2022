@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, time::Instant};
 mod day_1;
 mod day_2;
 mod day_3;
@@ -9,6 +9,8 @@ mod day_7;
 mod util;
 
 fn main() {
+    let now = Instant::now();
+
     let args: Vec<String> = env::args().collect();
     let day_num = &args[1];
     let task_num = &args[2];
@@ -104,4 +106,6 @@ fn main() {
 
         _ => println!("No match for exercise {}, task {}", day_num, task_num),
     }
+
+    println!("Elapsed: {:.2?}", now.elapsed());
 }
