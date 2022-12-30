@@ -37,13 +37,7 @@ impl<T> ArenaTree<T>
 where
     T: PartialEq,
 {
-    fn node(&mut self, val: T) -> usize {
-        for node in &self.arena {
-            if node.val == val {
-                return node.idx;
-            }
-        }
-
+    fn build_node(&mut self, val: T) -> usize {
         let idx = self.arena.len();
         self.arena.push(Node::new(idx, val));
         idx
@@ -83,29 +77,21 @@ fn build_tree(lines: Vec<String>) -> ArenaTree<(u32, String)> {
 
         match splits.next() {
             Some("$") => match splits.next() {
-                Some("cd") => match splits.next() {
-                    Some("..") => {
-                        println!(
-                            "cd ..: {:?} -> {:?}",
-                            current_dir,
-                            tree.arena[current_dir.unwrap()].parent
-                        );
-                        current_dir = tree.arena[current_dir.unwrap()].parent
-                    }
-                    Some(dirname) => {
-                        let dir_node = Some(tree.node((0, dirname.to_string())));
-                        // println!("/cd {}: {:?} -> {:?}", dirname, current_dir, dir_node);
-                        current_dir = dir_node
-                    }
+                Some("cd") => {
+                    current_dir = match splits.next() {
+                        Some("..") => tree.arena[current_dir.unwrap()].parent,
+                        Some(dirname) => match current_dir {
+                            None => Some(tree.build_node((0, dirname.to_string()))),
+                            Some(dir) => tree.arena[dir].children.clone().into_iter().find(|&n| {
+                                let (_, name) = &tree.arena[n].val;
+                                name == dirname
+                            }),
+                        },
 
-                    None => panic!(),
-                },
+                        None => panic!(),
+                    }
+                }
                 Some("ls") => {
-                    // println!(
-                    //     "ls: {:?}-{:?}",
-                    //     current_dir,
-                    //     tree.arena[current_dir.unwrap()]
-                    // );
                     continue;
                 }
                 None => panic!(),
@@ -119,9 +105,18 @@ fn build_tree(lines: Vec<String>) -> ArenaTree<(u32, String)> {
                     "dir" => 0,
                     s => s.parse().unwrap(),
                 };
-                let leaf = tree.node((size, splits.next().unwrap().to_string()));
-                tree.arena[leaf].parent = current_dir;
-                tree.arena[current_dir.unwrap()].children.insert(leaf);
+                let name = splits.next().unwrap().to_string();
+                let current_node = &tree.arena[current_dir.unwrap()];
+                if current_node
+                    .children
+                    .iter()
+                    .find(|&&c| tree.arena[c].val.1 == name)
+                    .is_none()
+                {
+                    let leaf = tree.build_node((size, name));
+                    tree.arena[leaf].parent = current_dir;
+                    tree.arena[current_dir.unwrap()].children.insert(leaf);
+                }
             }
             None => panic!(),
         }
@@ -131,22 +126,19 @@ fn build_tree(lines: Vec<String>) -> ArenaTree<(u32, String)> {
 }
 
 fn get_node_size<T>(val: &(u32, T)) -> u32 {
-    let (size, _) = val;
-
-    *size
+    val.0
 }
 
 pub fn task_one(lines: Vec<String>) -> String {
     let tree = build_tree(lines);
-
-    println!("{:?}", tree);
 
     tree.arena
         .iter()
         .filter_map(|n| {
             let size = tree.node_size(n.idx, get_node_size);
 
-            if size < 10000 {
+            // Only count directories
+            if size < 100000 && !n.children.is_empty() {
                 Some(size)
             } else {
                 None
