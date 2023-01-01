@@ -1,5 +1,6 @@
 use std::{env, time::Instant};
 mod day_1;
+mod day_10;
 mod day_2;
 mod day_3;
 mod day_4;
@@ -108,6 +109,13 @@ fn main() {
             println!(
                 "{}",
                 day_7::task_two(util::read_lines_to_string_vec(filename))
+            )
+        }
+
+        "10 1" => {
+            println!(
+                "{}",
+                day_10::task_one(util::read_lines_to_string_vec(filename))
             )
         }
 
